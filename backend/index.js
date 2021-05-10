@@ -23,8 +23,7 @@ require("express-ws")(app);
 
 const activeConnections = {};
 
-app.ws('/chat', async (ws, req)=>{
-  const id = nanoid();
+const connectionFn = (id, ws, req) => {
   console.log(`Client ${id} joined chat`);
   activeConnections[id] = ws;
 
@@ -34,12 +33,19 @@ app.ws('/chat', async (ws, req)=>{
     activeConnections[id].user = user;
     const connection = activeConnections[key];
     const userArray = Object.keys(activeConnections).map(key => {return activeConnections[key]});
-    connection.send(JSON.stringify({
-      type: 'ACTIVE_USERS',
-      value: userArray,
-      messagesList,
-    }))
+    if (ws.readyState === 1) {
+      connection.send(JSON.stringify({
+        type: 'ACTIVE_USERS',
+        value: userArray,
+        messagesList,
+      }));
+    }
   });
+};
+
+app.ws('/chat', async (ws, req)=>{
+  const id = nanoid();
+  connectionFn(id, ws, req);
 
   ws.on('message', async (msg) => {
     const decoded = JSON.parse(msg);
@@ -62,6 +68,19 @@ app.ws('/chat', async (ws, req)=>{
             }))
           })
         }
+      case 'DELETE_MESSAGE':
+        try {
+          await Messages.findByIdAndDelete(decoded.id);
+          Object.keys(activeConnections).forEach(key => {
+            const connection = activeConnections[key];
+            connection.send(JSON.stringify({
+              type: 'DELETE_MESSAGE',
+              id: decoded.id,
+            }));
+          })
+        } catch (e) {
+          console.error(e?.message);
+        }
     }
   });
 
@@ -76,7 +95,6 @@ app.ws('/chat', async (ws, req)=>{
          value: data,
        }));
     });
-
   });
 });
 

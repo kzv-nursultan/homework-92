@@ -5,7 +5,7 @@ import {makeStyles} from "@material-ui/core/styles";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import Button from "@material-ui/core/Button";
 import {useDispatch} from "react-redux";
-import {NavLink} from "react-router-dom";
+import {NavLink, useHistory} from "react-router-dom";
 import {loginUser} from "../../store/actions/UsersActions";
 import LoginFacebook from "../../components/UI/LoginFacebook/LoginFacebook";
 
@@ -39,6 +39,7 @@ const useStyles = makeStyles({
 const SingIn = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const history = useHistory();
   const [user, setUser] = useState({
     email:'',
     password:'',
@@ -56,6 +57,9 @@ const SingIn = () => {
   const onSubmitHandler = async e => {
     e.preventDefault();
     await dispatch(loginUser('/users/session', {...user}));
+    setTimeout(()=>{
+      history.push('/')
+    },1500);
   };
 
 

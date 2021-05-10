@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {NavLink} from "react-router-dom";
+import {NavLink, useHistory} from "react-router-dom";
 import {Grid, Typography} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
@@ -36,6 +36,7 @@ const useStyles = makeStyles({
 const SingUp = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const history = useHistory();
   const [user, setUser] = useState({
     email:'',
     password:'',
@@ -66,6 +67,9 @@ const SingUp = () => {
   const onSubmitHandler = async e => {
     e.preventDefault();
     await dispatch(postUser('/users', {...user}));
+    setTimeout(()=>{
+      history.push('/');
+    }, 1500);
   };
 
 

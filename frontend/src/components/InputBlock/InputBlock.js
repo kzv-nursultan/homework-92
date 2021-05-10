@@ -35,8 +35,12 @@ const InputBlock = ({ws, author}) => {
     ws.current.send(JSON.stringify({
       type: 'NEW_MESSAGE',
       value: message,
-    }))
+    }));
     NotificationManager.success('Message sent');
+    setMessage(prevState => ({
+      ...prevState,
+      body: ''
+    }));
   }
   return (
     <Grid container item component='form'

@@ -59,13 +59,16 @@ const MainPage = () => {
   const onlineUsers = useSelector(state => state?.activeUsers.onlineUsers);
   const messagesList = useSelector(state => state?.activeUsers.messages);
 
-
   useEffect(()=>{
     ws.current = new WebSocket("ws://localhost:8000/chat?token=" + loginUser.token);
 
     ws.current.onmessage = event => {
       const decoded = JSON.parse(event.data);
       dispatch(decoded);
+    };
+
+    ws.current.onclose = () => {
+      console.log('closed');
     };
 
   },[loginUser.token, dispatch]);
@@ -91,6 +94,8 @@ const MainPage = () => {
       messagesList.map(object => (
         <MessagesList
         key={object._id}
+        ws={ws}
+        id={object._id}
         author={object.author.displayName}
         body={object.body}
         date={object.date}

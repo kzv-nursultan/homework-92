@@ -31,7 +31,7 @@ const rootReducer = combineReducers({
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const enhancer = composeEnhancer(applyMiddleware(thunk));
 const persistedState = loadFromLocalStorage();
-const store = createStore(rootReducer, enhancer);
+const store = createStore(rootReducer,  enhancer);
 
 store.subscribe(()=>{
   saveToLocalStorage({

@@ -13,7 +13,6 @@ const UsersSchema = new Schema({
     validate: {
       validator: async function(value){
         if(this.isModified('email')) {
-          console.log('value:' + value);
           const user = await Users.findOne({email: value});
           return !user;
         }
@@ -35,6 +34,12 @@ const UsersSchema = new Schema({
   },
   avatar: String,
   facebookID: String,
+  role:{
+    type: String,
+    required: true,
+    default: 'user',
+    enum: ['moderator', 'user'],
+  }
 });
 
 UsersSchema.pre('save', async function (next) {

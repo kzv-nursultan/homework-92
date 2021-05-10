@@ -39,6 +39,8 @@ export const users = (state = initialState, action) => {
       return {...state, onlineUsers: state.onlineUsers.filter(u => u.user._id !== action.value)};
     case 'RECEIVE_MESSAGE':
       return {...state, messages:[action.value, ...state.messages]};
+    case 'DELETE_MESSAGE':
+      return {...state, messages:state.messages.filter(m => m._id !== action.id)};
     default:
       return state;
   }
