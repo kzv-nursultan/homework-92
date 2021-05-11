@@ -6,8 +6,11 @@ const Messages = require("./models/Messages");
 
 const run = async () => {
   await mongoose.connect(config.db.url, config.db.options);
-  await mongoose.connection.db.dropCollection('users');
-  await mongoose.connection.db.dropCollection('messages');
+
+  const collections = await mongoose.connection.db.listCollections().toArray();
+  for (const coll of collections) {
+    await mongoose.connection.db.dropCollection(coll.name);
+  }
 
   const [moderator, user] = await Users.create({
     email: 'moderator@mail.com',
@@ -33,7 +36,7 @@ const run = async () => {
     author: user,
     body: 'Hello there! General Kenobi...',
     date: new Date(),
-  })
+  });
   await mongoose.connection.close();
 };
 

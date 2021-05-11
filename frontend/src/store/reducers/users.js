@@ -10,7 +10,7 @@ import {
 
 const initialState = {
   loading: false,
-  onlineUsers: {},
+  onlineUsers: [],
   newUser:{},
   messages: [],
   loginUser:{},
@@ -41,6 +41,8 @@ export const users = (state = initialState, action) => {
       return {...state, messages:[action.value, ...state.messages]};
     case 'DELETE_MESSAGE':
       return {...state, messages:state.messages.filter(m => m._id !== action.id)};
+    case 'SECRET_MESSAGE':
+      return {...state, messages:[action.value, ...state.messages]};
     default:
       return state;
   }

@@ -2,11 +2,10 @@ require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const {nanoid} = require("nanoid");
-const users = require("./app/users");
-const messages = require("./app/messages");
 const mongoose = require("mongoose");
 const exitHook = require("async-exit-hook");
 const config = require("./config")
+const users = require("./app/users");
 const Users = require("./models/Users");
 const Messages = require("./models/Messages");
 const app = express();
@@ -17,7 +16,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/users', users);
-app.use('/messages', messages)
 
 require("express-ws")(app);
 
@@ -32,7 +30,8 @@ const connectionFn = (id, ws, req) => {
     const messagesList = await Messages.find().populate('author').sort({date: -1}).limit(5);
     activeConnections[id].user = user;
     const connection = activeConnections[key];
-    const userArray = Object.keys(activeConnections).map(key => {return activeConnections[key]});
+    const userArray = [];
+    Object.keys(activeConnections).map(key =>  userArray.push(activeConnections[key]));
     if (ws.readyState === 1) {
       connection.send(JSON.stringify({
         type: 'ACTIVE_USERS',
@@ -58,7 +57,7 @@ app.ws('/chat', async (ws, req)=>{
             body: decoded.value.body,
             date: new Date(),
           });
-          newMessage.save();
+          await newMessage.save();
           newMessage.author = user;
           Object.keys(activeConnections).forEach(key => {
             const connection = activeConnections[key];
@@ -68,6 +67,7 @@ app.ws('/chat', async (ws, req)=>{
             }))
           })
         }
+        break;
       case 'DELETE_MESSAGE':
         try {
           await Messages.findByIdAndDelete(decoded.id);
@@ -81,6 +81,34 @@ app.ws('/chat', async (ws, req)=>{
         } catch (e) {
           console.error(e?.message);
         }
+        break;
+      case 'PERSONAL_MESSAGE':
+        const author = await Users.findById(decoded.value.sender);
+        Object.keys(activeConnections).map(key => {
+          const connection = activeConnections[key];
+          if (connection.user._id == decoded.value.sender) {
+            connection.send(JSON.stringify({
+              type: 'SECRET_MESSAGE',
+              value: {
+                _id: nanoid(),
+                author,
+                body: decoded.value.body,
+                date: new Date(),
+              }
+            }));
+          } else if (connection.user._id == decoded.value.recipient) {
+            connection.send(JSON.stringify({
+              type: 'SECRET_MESSAGE',
+              value: {
+                _id: nanoid(),
+                author,
+                body: decoded.value.body,
+                date: new Date(),
+              }
+            }));
+          }
+        });
+        break;
     }
   });
 

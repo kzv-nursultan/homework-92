@@ -1,7 +1,6 @@
-import {users} from "./reducers/users";
-import {messages} from "./reducers/messages";
 import {applyMiddleware, combineReducers, compose, createStore} from "redux";
 import thunk from "redux-thunk";
+import {users} from "./reducers/users";
 
 const saveToLocalStorage = state => {
 
@@ -13,7 +12,6 @@ const saveToLocalStorage = state => {
   }
 };
 const loadFromLocalStorage = () => {
-
   try {
     const serializedState = localStorage.getItem('chatUser');
     if(serializedState === null) return undefined;
@@ -25,13 +23,12 @@ const loadFromLocalStorage = () => {
 
 const rootReducer = combineReducers({
   activeUsers: users,
-  messages: messages,
 });
 
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const enhancer = composeEnhancer(applyMiddleware(thunk));
 const persistedState = loadFromLocalStorage();
-const store = createStore(rootReducer,  enhancer);
+const store = createStore(rootReducer, persistedState, enhancer);
 
 store.subscribe(()=>{
   saveToLocalStorage({
